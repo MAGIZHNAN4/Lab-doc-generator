@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lab Record Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --paper:#FBFAF5;
+    --ink:#20283A;
+    --rule:#DAD4C2;
+    --margin-red:#A8394A;
+    --graphite:#5C6470;
+    --pine:#2E6B58;
+    --pine-dark:#204C3F;
+    --sheet-w: 680px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 32px;
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, serif;
+    min-height:100vh;
+  }
+  .topbar{
+    display:flex;align-items:baseline;gap:14px;
+    padding:22px 32px 16px;
+    border-bottom:2px solid var(--ink);
+    background:var(--paper);
+  }
+  .topbar .mark{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600; font-size:13px;
+    background:var(--ink); color:var(--paper);
+    padding:3px 8px; letter-spacing:.02em;
+  }
+  .topbar h1{ font-size:21px; font-weight:600; margin:0; }
+  .topbar .sub{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--graphite); }
+  .layout{
+    display:grid;
+    grid-template-columns: minmax(320px, 440px) 1fr;
+    min-height:calc(100vh - 70px);
+  }
+  @media (max-width: 920px){ .layout{grid-template-columns:1fr;} }
+  .panel-form{ border-right:2px solid var(--ink); padding:26px 30px 60px; position:relative; }
+  .panel-preview{ padding:26px 30px 60px; display:flex; flex-direction:column; align-items:center; gap:18px; overflow-x:auto; }
+  .progress{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--graphite); display:flex; justify-content:space-between; margin-bottom:8px; }
+  .progress-track{ height:3px; background:var(--rule); margin-bottom:24px; position:relative; }
+  .progress-fill{ position:absolute; left:0; top:0; height:100%; background:var(--pine); transition:width .25s ease; }
+  .field-label{ font-size:10.5px; font-family:'IBM Plex Mono',monospace; letter-spacing:.03em; color:var(--margin-red); margin-bottom:6px; display:block; }
+  .field-title{ font-size:22px; font-weight:600; margin:0 0 6px; }
+  .field-help{ font-size:13.5px; color:var(--graphite); margin:0 0 18px; line-height:1.5; max-width:46ch; }
+  input[type=text], input[type=date], input[type=number], textarea{
+    width:100%; font-family:'IBM Plex Mono', monospace; font-size:14px;
+    padding:11px 12px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); border-radius:2px;
+  }
+  textarea{resize:vertical; min-height:100px; line-height:1.5;}
+  input:focus, textarea:focus{ outline:2px solid var(--pine); outline-offset:1px; }
+  .nav-row{ display:flex; gap:10px; margin-top:22px; }
+  button{
+    font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.02em;
+    padding:10px 16px; border:1.5px solid var(--ink); background:#fff; color:var(--ink);
+    cursor:pointer; border-radius:2px;
+  }
+  button.primary{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  button.primary:hover{background:#000;}
+  button.ghost{border-color:var(--rule); color:var(--graphite);}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  button.pine{background:var(--pine); color:#fff; border-color:var(--pine);}
+  button.pine:hover{background:var(--pine-dark);}
+  .sample-link{
+    position:absolute; top:26px; right:30px; font-family:'IBM Plex Mono', monospace; font-size:11px;
+    color:var(--pine); background:none; border:none; text-decoration:underline; cursor:pointer; padding:0;
+  }
+  .format-note{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--graphite); border-top:1px solid var(--rule); padding-top:12px; margin-top:18px; line-height:1.6; }
+  .upload-row{ margin-top:12px; }
+  .upload-btn{
+    display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:600;
+    color:var(--pine); border:1.5px dashed var(--pine); padding:9px 14px; border-radius:2px; cursor:pointer; background:#F2F6EC;
+  }
+  .upload-hint{ font-size:11.5px; color:var(--graphite); margin:6px 0 0; font-family:'IBM Plex Mono',monospace; }
+  .thumb-wrap{ margin-top:12px; border:1px solid var(--rule); border-radius:2px; overflow:hidden; background:#fff; }
+  .thumb-wrap img{ display:block; max-width:100%; max-height:260px; margin:0 auto; }
+  .thumb-meta{ display:flex; justify-content:space-between; align-items:center; padding:7px 10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--graphite); border-top:1px solid var(--rule); }
+  .thumb-meta button{ padding:4px 8px; font-size:10.5px; }
+
+  /* ---- Document preview: mirrors the exact .docx layout ---- */
+  .sheet{
+    width:var(--sheet-w); background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.15), 0 12px 30px rgba(0,0,0,.08);
+    border:2px solid #111; padding:34px 40px; font-family:'Tinos', 'Times New Roman', serif; font-size:13.5px; line-height:1.5; color:#111;
+  }
+  .doc-table{ width:100%; border-collapse:collapse; margin-bottom:14px; }
+  .doc-table td{ border:1px solid #111; padding:6px 10px; font-weight:700; vertical-align:middle; }
+  .doc-table .topic-cell{ text-align:center; width:73%; }
+  .doc-table .meta-cell{ width:27%; }
+  .doc-aim{ margin-bottom:16px; }
+  .doc-aim b{ font-weight:700; }
+  .doc-label{ font-weight:700; text-decoration:underline; margin:14px 0 4px; }
+  .doc-body-text{ white-space:pre-wrap; margin-bottom:6px; }
+  .doc-code{ white-space:pre-wrap; margin-bottom:6px; }
+  .doc-output-img{ max-width:100%; display:block; margin:4px 0 8px; }
+  .doc-output-empty{ color:#999; font-style:italic; font-size:12.5px; margin-bottom:8px; }
+  .doc-result{ margin-top:20px; }
+  .doc-result b{ font-weight:700; text-decoration:underline; }
+  .review-actions{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px; }
+  .empty-hint{ color:var(--graphite); font-family:'IBM Plex Mono',monospace; font-size:12px; max-width:32ch; text-align:center; margin-top:80px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="mark">LR</span>
+  <div>
+    <h1>Lab Record Generator</h1>
+    <div class="sub">Matches reference .docx exactly · Word + picture export</div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="panel-form" id="panelForm"></div>
+  <div class="panel-preview" id="panelPreview"></div>
+</div>
+
+<script>
+// ---------------- State ----------------
+function blankQ(){ return {question:"", code:"", outputText:"", outputImage:null}; }
+const state = { regNo:"", date:"", exNo:"", topic:"", aim:"", numQs:2, questions:[], result:"" };
+let step = 0;
+
+function buildSteps(){
+  const s = [
+    {key:"regNo", kind:"text", title:"Register Number", label:"Header — Reg No",
+     help:"Placed in the left header cell, bold. E.g. 21CS1042."},
+    {key:"exNo", kind:"text", title:"Exercise Number", label:"Header — Ex. No",
+     help:"Printed as \u201cEx. No: __\u201d beneath the register number."},
+    {key:"date", kind:"date", title:"Date", label:"Header — Date",
+     help:"Printed beneath the exercise number."},
+    {key:"topic", kind:"text", title:"Topic", label:"Header — Topic",
+     help:"Centered, bold, in the wide right-hand cell spanning all three header rows."},
+    {key:"aim", kind:"textarea", title:"Aim", label:"Body — Aim",
+     help:"One or two sentences. Printed as \u201cAIM: \u2026\u201d below the header table."},
+    {key:"numQs", kind:"number", title:"Number of Questions", label:"Questions — Count",
+     help:"Each question renders as QUESTION: / PROGRAM: / OUTPUT: in sequence, flowing continuously (no forced page breaks \u2014 matches how Word paginates it)."},
+  ];
+  const n = Math.max(1, Math.min(20, parseInt(state.numQs)||1));
+  for(let i=0;i<n;i++){
+    s.push({key:"q"+i+"_question", kind:"textarea", title:"Q"+(i+1)+" — Question", label:"Question "+(i+1),
+      help:"Printed under the bold, underlined \u201cQUESTION:\u201d label."});
+    s.push({key:"q"+i+"_code", kind:"code", title:"Q"+(i+1)+" — Program", label:"Question "+(i+1)+" — Code",
+      help:"Printed under the bold, underlined \u201cPROGRAM:\u201d label, preserving your line breaks and indentation."});
+    s.push({key:"q"+i+"_output", kind:"output", title:"Q"+(i+1)+" — Output", label:"Question "+(i+1)+" — Output",
+      help:"Printed under the bold, underlined \u201cOUTPUT:\u201d label, as an embedded picture \u2014 attach a screenshot of the program's output."});
+  }
+  s.push({key:"result", kind:"textarea", title:"Result", label:"Closing — Result",
+    help:"Printed as \u201cRESULT: \u2026\u201d at the end of the record."});
+  return s;
+}
+let steps = buildSteps();
+
+function getVal(key){
+  if(key.startsWith("q")){
+    const [qi, field] = key.split("_");
+    const idx = parseInt(qi.slice(1));
+    return (state.questions[idx] && state.questions[idx][field]) ?? "";
+  }
+  return state[key] ?? "";
+}
+function setVal(key, value){
+  if(key.startsWith("q")){
+    const [qi, field] = key.split("_");
+    const idx = parseInt(qi.slice(1));
+    if(!state.questions[idx]) state.questions[idx] = blankQ();
+    state.questions[idx][field] = value;
+  } else { state[key] = value; }
+}
+
+async function loadSample(){
+  state.regNo = "21CS1042";
+  state.exNo = "4";
+  state.date = new Date().toISOString().slice(0,10);
+  state.topic = "Singly Linked List Implementation";
+  state.aim = "To write a program that implements insertion, deletion and traversal on a singly linked list.";
+  state.numQs = 1;
+  state.questions = [{
+    question:"Write a menu-driven C program to insert a node at the end of a singly linked list, delete the first node, and display the list.",
+    code:"struct Node {\n  int data;\n  Node* next;\n};\n\nvoid insertEnd(Node*& head, int val) {\n  Node* n = new Node{val, nullptr};\n  if (!head) { head = n; return; }\n  Node* t = head;\n  while (t->next) t = t->next;\n  t->next = n;\n}",
+    outputText:"", outputImage:null
+  }];
+  state.result = "The program to implement a singly linked list was executed successfully and the output was verified.";
+  steps = buildSteps();
+  step = steps.length;
+  render();
+}
+
+function render(){
+  steps = buildSteps();
+  step = Math.min(step, steps.length);
+  renderForm();
+  renderPreview();
+}
+
+function renderForm(){
+  const el = document.getElementById('panelForm');
+  const total = steps.length + 1;
+  const current = Math.min(step, steps.length) + 1;
+  const pct = Math.round((current/total)*100);
+
+  if(step >= steps.length){
+    el.innerHTML = `
+      <button class="sample-link" onclick="loadSample()">Load sample</button>
+      <div class="progress"><span>Review</span><span>${pct}% completed</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <p class="field-label">Review All</p>
+      <h2 class="field-title">Ready to export</h2>
+      <p class="field-help">The preview matches the reference document exactly: bordered header table, QUESTION / PROGRAM / OUTPUT per question, RESULT at the close, page border repeating on every page.</p>
+      <div class="nav-row"><button class="ghost" onclick="step=steps.length-1; render()">Back to edit</button></div>
+      <div class="format-note">Format: header table (Reg No / Ex No / Date left, Topic merged right) &middot; AIM &middot; QUESTION: / PROGRAM: / OUTPUT: (picture) per question &middot; RESULT: at the close &middot; page border on every page</div>
+    `;
+    return;
+  }
+
+  const s = steps[step];
+  let inputHtml = "";
+  if(s.kind === "textarea"){
+    inputHtml = `<textarea id="fld" rows="5" autofocus>${escapeHtml(getVal(s.key))}</textarea>`;
+  } else if(s.kind === "code"){
+    inputHtml = `<textarea id="fld" rows="8" style="font-family:'IBM Plex Mono',monospace;" autofocus>${escapeHtml(getVal(s.key))}</textarea>`;
+  } else if(s.kind === "number"){
+    inputHtml = `<input id="fld" type="number" min="1" max="20" value="${escapeHtml(String(getVal(s.key)||1))}" />`;
+  } else if(s.kind === "date"){
+    inputHtml = `<input id="fld" type="date" value="${escapeHtml(getVal(s.key))}" />`;
+  } else if(s.kind === "output"){
+    const [qi] = s.key.split("_");
+    const idx = parseInt(qi.slice(1));
+    const q = state.questions[idx] || blankQ();
+    inputHtml = `
+      <div class="upload-row">
+        <label class="upload-btn" for="imgFld">${q.outputImage ? 'Replace screenshot' : 'Attach output screenshot'}</label>
+        <input type="file" id="imgFld" accept="image/png,image/jpeg" style="display:none" />
+        <p class="upload-hint">PNG or JPG. Embedded directly under OUTPUT: in the document, sized to fit the page width.</p>
+      </div>
+      ${q.outputImage ? `
+      <div class="thumb-wrap">
+        <img src="${q.outputImage.dataUrl}" />
+        <div class="thumb-meta"><span>${escapeHtml(q.outputImage.name)}</span><button type="button" id="removeImg">Remove</button></div>
+      </div>` : ``}
+    `;
+  } else {
+    inputHtml = `<input id="fld" type="text" value="${escapeHtml(getVal(s.key))}" autofocus />`;
+  }
+
+  el.innerHTML = `
+    <button class="sample-link" onclick="loadSample()">Load sample</button>
+    <div class="progress"><span>Step ${current} of ${total}</span><span>${pct}% completed</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <span class="field-label">${s.label}</span>
+    <h2 class="field-title">${s.title}</h2>
+    <p class="field-help">${s.help}</p>
+    ${inputHtml}
+    <div class="nav-row">
+      <button class="ghost" id="btnPrev" ${step===0?'disabled':''}>Previous</button>
+      <button class="primary" id="btnNext">${step===steps.length-1 ? 'Review All' : 'Next'}</button>
+    </div>
+  `;
+
+  if(s.kind === "output"){
+    const [qi] = s.key.split("_");
+    const idx = parseInt(qi.slice(1));
+    document.getElementById('imgFld').addEventListener('change', async (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(file) await attachImage(idx, file);
+      e.target.value = "";
+    });
+    const rm = document.getElementById('removeImg');
+    if(rm) rm.addEventListener('click', ()=>{ state.questions[idx].outputImage = null; render(); });
+    document.getElementById('btnNext').addEventListener('click', ()=>{ step++; render(); });
+    document.getElementById('btnPrev').addEventListener('click', ()=>{ step--; render(); });
+    return;
+  }
+
+  const fld = document.getElementById('fld');
+  fld.addEventListener('input', ()=>{ setVal(s.key, fld.value); if(s.kind==='number'){ renderPreview(); } });
+  document.getElementById('btnNext').addEventListener('click', ()=>{ setVal(s.key, fld.value); step++; render(); });
+  const prevBtn = document.getElementById('btnPrev');
+  if(prevBtn) prevBtn.addEventListener('click', ()=>{ setVal(s.key, fld.value); step--; render(); });
+}
+
+async function attachImage(idx, file){
+  const arrayBuffer = await file.arrayBuffer();
+  const dataUrl = await new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result); r.onerror = rej; r.readAsDataURL(file);
+  });
+  const dims = await new Promise((res,rej)=>{
+    const img = new Image();
+    img.onload = ()=>res({width:img.naturalWidth, height:img.naturalHeight});
+    img.onerror = rej; img.src = dataUrl;
+  });
+  const ext = file.type === 'image/png' ? 'png' : 'jpeg';
+  if(!state.questions[idx]) state.questions[idx] = blankQ();
+  state.questions[idx].outputImage = { arrayBuffer, dataUrl, ext, mime:file.type, width:dims.width, height:dims.height, name:file.name };
+  render();
+}
+
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function nl2br(str){ return escapeHtml(str).replace(/\n/g,'<br>'); }
+
+// ---------------- Preview (mirrors the .docx layout) ----------------
+function renderPreview(){
+  const el = document.getElementById('panelPreview');
+  const n = Math.max(1, Math.min(20, parseInt(state.numQs)||1));
+  const hasAnyContent = state.regNo || state.topic || (state.questions[0] && state.questions[0].question);
+  if(!hasAnyContent){
+    el.innerHTML = `<div class="empty-hint">The document preview builds here as you fill in each field \u2014 it mirrors the exported .docx exactly.</div>`;
+    return;
+  }
+
+  let qHtml = "";
+  for(let i=0;i<n;i++){
+    const q = state.questions[i] || blankQ();
+    qHtml += `
+      <div class="doc-label">QUESTION:</div>
+      <div class="doc-body-text">${nl2br(q.question) || '&nbsp;'}</div>
+      <div class="doc-label">PROGRAM:</div>
+      <div class="doc-code">${nl2br(q.code) || '&nbsp;'}</div>
+      <div class="doc-label">OUTPUT:</div>
+      ${q.outputImage ? `<img class="doc-output-img" src="${q.outputImage.dataUrl}" />` : `<div class="doc-output-empty">No screenshot attached yet</div>`}
+    `;
+  }
+
+  const showExport = step >= steps.length;
+  el.innerHTML = `
+    ${showExport ? `<div class="review-actions">
+      <button class="primary" id="btnDocx">Download Word (.docx)</button>
+      <button class="pine" id="btnImages">Download Pictures (.png, one per page)</button>
+    </div>` : ``}
+    <div class="sheet" id="sheet">
+      <table class="doc-table">
+        <tr>
+          <td class="meta-cell">${escapeHtml(state.regNo)||'\u2014'}</td>
+          <td class="topic-cell" rowspan="3" style="text-align:center;">${escapeHtml(state.topic)||'\u2014'}</td>
+        </tr>
+        <tr><td class="meta-cell">Ex. No: ${escapeHtml(state.exNo)||'\u2014'}</td></tr>
+        <tr><td class="meta-cell">${escapeHtml(state.date)||'\u2014'}</td></tr>
+      </table>
+      <div class="doc-aim"><b>AIM:</b> ${nl2br(state.aim)}</div>
+      ${qHtml}
+      <div class="doc-result"><b>RESULT</b>: ${nl2br(state.result)}</div>
+    </div>
+  `;
+
+  if(showExport){
+    document.getElementById('btnDocx').addEventListener('click', generateDocx);
+    document.getElementById('btnImages').addEventListener('click', exportImages);
+  }
+}
+
+// ---------------- DOCX export: raw OOXML matching the reference document ----------------
+function xmlEscape(str){
+  return String(str ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+}
+const RPR_BODY = '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/>';
+const RPR_BOLD = RPR_BODY + '<w:b/><w:bCs/>';
+const RPR_LABEL = RPR_BOLD + '<w:u w:val="single"/>';
+const RPR_CODE = '<w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/>';
+
+function runsML(text, rPr){
+  const lines = String(text ?? "").split("\n");
+  return lines.map((line,i)=>{
+    const r = `<w:r><w:rPr>${rPr}</w:rPr><w:t xml:space="preserve">${xmlEscape(line)}</w:t></w:r>`;
+    return i < lines.length-1 ? r + '<w:r><w:br/></w:r>' : r;
+  }).join("");
+}
+function para(runsXml, opts={}){
+  const pPr = `<w:pPr><w:spacing w:after="0"/>${opts.align?`<w:jc w:val="${opts.align}"/>`:''}</w:pPr>`;
+  return `<w:p>${pPr}${runsXml}</w:p>`;
+}
+function labelPara(text){ return para(`<w:r><w:rPr>${RPR_LABEL}</w:rPr><w:t>${xmlEscape(text)}</w:t></w:r>`); }
+function bodyPara(text){ return para(runsML(text, RPR_BODY)); }
+function codePara(text){
+  return String(text ?? "").split("\n").map(line => para(`<w:r><w:rPr>${RPR_CODE}</w:rPr><w:t xml:space="preserve">${xmlEscape(line)}</w:t></w:r>`)).join("");
+}
+
+const CONTENT_WIDTH_EMU = 9026 * 635;
+function computeImageExtent(img){
+  const nativeW = img.width * 9525, nativeH = img.height * 9525;
+  if(nativeW <= CONTENT_WIDTH_EMU) return {cx: nativeW, cy: nativeH};
+  const ratio = CONTENT_WIDTH_EMU / nativeW;
+  return {cx: CONTENT_WIDTH_EMU, cy: Math.round(nativeH * ratio)};
+}
+function imageDrawingRun(rId, cx, cy, name, id){
+  return `<w:r><w:rPr>${RPR_BODY}</w:rPr><w:drawing>
+    <wp:inline distT="0" distB="0" distL="0" distR="0">
+      <wp:extent cx="${cx}" cy="${cy}"/>
+      <wp:effectExtent l="0" t="0" r="0" b="0"/>
+      <wp:docPr id="${id}" name="${xmlEscape(name)}"/>
+      <wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>
+      <a:graphic>
+        <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+          <pic:pic>
+            <pic:nvPicPr><pic:cNvPr id="${id}" name="${xmlEscape(name)}"/><pic:cNvPicPr/></pic:nvPicPr>
+            <pic:blipFill><a:blip r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>
+            <pic:spPr>
+              <a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm>
+              <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+            </pic:spPr>
+          </pic:pic>
+        </a:graphicData>
+      </a:graphic>
+    </wp:inline>
+  </w:drawing></w:r>`;
+}
+
+function buildHeaderTableXml(){
+  const half = 2538, wide = 7038;
+  const borders = `<w:tcBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:left w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/><w:right w:val="single" w:sz="4" w:space="0" w:color="000000"/></w:tcBorders>`;
+  const cell = (widthTw, content, vMerge, center) => `<w:tc><w:tcPr><w:tcW w:w="${widthTw}" w:type="dxa"/>${borders}${vMerge?`<w:vMerge w:val="${vMerge}"/>`:''}<w:vAlign w:val="center"/></w:tcPr>${content}</w:tc>`;
+  const p = (text, center) => `<w:p><w:pPr><w:spacing w:after="0"/>${center?'<w:jc w:val="center"/>':''}</w:pPr>${text?`<w:r><w:rPr>${RPR_BOLD}</w:rPr><w:t xml:space="preserve">${xmlEscape(text)}</w:t></w:r>`:''}</w:p>`;
+
+  return `<w:tbl>
+    <w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblLook w:val="04A0" w:firstRow="1" w:firstColumn="1" w:noHBand="0" w:noVBand="1"/></w:tblPr>
+    <w:tblGrid><w:gridCol w:w="${half}"/><w:gridCol w:w="${wide}"/></w:tblGrid>
+    <w:tr>${cell(half, p("Reg No: " + (state.regNo||"")))}${cell(wide, p((state.topic||"").toUpperCase(), true), "restart")}</w:tr>
+    <w:tr>${cell(half, p("Ex. No: " + (state.exNo||"")))}${cell(wide, p(""), "continue")}</w:tr>
+    <w:tr>${cell(half, p(state.date||""))}${cell(wide, p(""), "continue")}</w:tr>
+  </w:tbl>
+  <w:p><w:pPr><w:spacing w:after="0"/></w:pPr></w:p>`;
+}
+
+function buildDocumentXml(imageRels){
+  const n = Math.max(1, Math.min(20, parseInt(state.numQs)||1));
+  let body = buildHeaderTableXml();
+  body += para(`<w:r><w:rPr>${RPR_BOLD}</w:rPr><w:t xml:space="preserve">AIM: </w:t></w:r>${runsML(state.aim||"", RPR_BODY)}`);
+  body += `<w:p><w:pPr><w:spacing w:after="0"/></w:pPr></w:p>`;
+
+  let docPrId = 100;
+  for(let i=0;i<n;i++){
+    const q = state.questions[i] || blankQ();
+    body += labelPara("QUESTION:");
+    body += bodyPara(q.question||"");
+    body += labelPara("PROGRAM:");
+    body += codePara(q.code||"");
+    body += labelPara("OUTPUT:");
+    if(q.outputImage){
+      const rId = "rIdImg" + (imageRels.length+1);
+      imageRels.push({rId, ext: q.outputImage.ext, arrayBuffer: q.outputImage.arrayBuffer, mime: q.outputImage.mime});
+      const {cx, cy} = computeImageExtent(q.outputImage);
+      docPrId++;
+      body += `<w:p><w:pPr><w:spacing w:after="0"/></w:pPr>${imageDrawingRun(rId, cx, cy, "Output "+(i+1), docPrId)}</w:p>`;
+    } else if(q.outputText){
+      body += bodyPara(q.outputText);
+    }
+    body += `<w:p><w:pPr><w:spacing w:after="0"/></w:pPr></w:p>`;
+  }
+
+  body += para(`<w:r><w:rPr>${RPR_LABEL}</w:rPr><w:t>RESULT</w:t></w:r><w:r><w:rPr>${RPR_BODY}</w:rPr><w:t xml:space="preserve">: </w:t></w:r>${runsML(state.result||"", RPR_BODY)}`);
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+  <w:body>
+    ${body}
+    <w:sectPr>
+      <w:pgSz w:w="11906" w:h="16838" w:orient="portrait"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:pgBorders w:zOrder="front" w:display="allPages" w:offsetFrom="page">
+        <w:top w:val="single" w:sz="4" w:space="24" w:color="auto"/>
+        <w:left w:val="single" w:sz="4" w:space="24" w:color="auto"/>
+        <w:bottom w:val="single" w:sz="4" w:space="24" w:color="auto"/>
+        <w:right w:val="single" w:sz="4" w:space="24" w:color="auto"/>
+      </w:pgBorders>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+}
+
+const STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="26"/></w:rPr></w:rPrDefault></w:docDefaults>
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+</w:styles>`;
+
+async function generateDocx(){
+  const zip = new JSZip();
+  const imageRels = [];
+  const documentXml = buildDocumentXml(imageRels);
+
+  const contentTypeExts = [...new Set(imageRels.map(r=>r.ext))];
+  const ctOverrides = contentTypeExts.map(ext => `<Default Extension="${ext}" ContentType="image/${ext==='jpeg'?'jpeg':'png'}"/>`).join("");
+  const CONTENT_TYPES = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  ${ctOverrides}
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
+
+  const RELS_ROOT = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+  let docRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
+  imageRels.forEach((r, idx) => {
+    const fname = `image${idx+1}.${r.ext}`;
+    docRels += `\n  <Relationship Id="${r.rId}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/${fname}"/>`;
+    zip.file(`word/media/${fname}`, r.arrayBuffer);
+  });
+  docRels += `\n</Relationships>`;
+
+  zip.file("[Content_Types].xml", CONTENT_TYPES);
+  zip.file("_rels/.rels", RELS_ROOT);
+  zip.file("word/document.xml", documentXml);
+  zip.file("word/styles.xml", STYLES_XML);
+  zip.file("word/_rels/document.xml.rels", docRels);
+
+  const blob = await zip.generateAsync({type:"blob", mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+  downloadBlob(blob, (state.topic || "lab-record").replace(/\s+/g,"_") + ".docx");
+}
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+// ---------------- Image export: slice the continuous sheet into A4 pages, zipped ----------------
+async function exportImages(){
+  const btn = document.getElementById('btnImages');
+  const original = btn.textContent;
+  btn.disabled = true; btn.textContent = "Rendering\u2026";
+  try{
+    const sheet = document.getElementById('sheet');
+    const fullCanvas = await html2canvas(sheet, {scale:3, backgroundColor:"#ffffff"});
+    const pageAspect = 11906/16838; // A4 width/height
+    const pageHeightPx = Math.round(fullCanvas.width / pageAspect);
+    const pageCount = Math.max(1, Math.ceil(fullCanvas.height / pageHeightPx));
+    const zip = new JSZip();
+    for(let p=0; p<pageCount; p++){
+      const c = document.createElement('canvas');
+      c.width = fullCanvas.width; c.height = pageHeightPx;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,c.width,c.height);
+      ctx.drawImage(fullCanvas, 0, p*pageHeightPx, fullCanvas.width, pageHeightPx, 0, 0, fullCanvas.width, pageHeightPx);
+      const blob = await new Promise(res => c.toBlob(res, "image/png"));
+      zip.file(`page-${p+1}.png`, blob);
+    }
+    const zipBlob = await zip.generateAsync({type:"blob"});
+    downloadBlob(zipBlob, (state.topic || "lab-record").replace(/\s+/g,"_") + "-images.zip");
+  } finally {
+    btn.disabled = false; btn.textContent = original;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
