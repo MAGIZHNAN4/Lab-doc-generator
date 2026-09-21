@@ -43,6 +43,9 @@
   }
   .topbar h1{ font-size:21px; font-weight:600; margin:0; }
   .topbar .sub{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--graphite); }
+  .topbar-actions{ margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .topbar-actions button{ padding:6px 9px; font-size:10.5px; }
+  .save-status{ font:10.5px 'IBM Plex Mono',monospace; color:var(--graphite); min-width:54px; }
   .layout{
     display:grid;
     grid-template-columns: minmax(320px, 440px) 1fr;
@@ -54,6 +57,10 @@
   .progress{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--graphite); display:flex; justify-content:space-between; margin-bottom:8px; }
   .progress-track{ height:3px; background:var(--rule); margin-bottom:24px; position:relative; }
   .progress-fill{ position:absolute; left:0; top:0; height:100%; background:var(--pine); transition:width .25s ease; }
+  .question-controls{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin:-4px 0 20px; padding:9px 10px; border:1px solid var(--rule); background:#fff; }
+  .question-controls span{ font-family:'IBM Plex Mono', monospace; font-size:11px; color:var(--graphite); }
+  .question-controls b{ color:var(--ink); }
+  .question-controls button{ padding:6px 9px; font-size:10.5px; }
   .field-label{ font-size:10.5px; font-family:'IBM Plex Mono',monospace; letter-spacing:.03em; color:var(--margin-red); margin-bottom:6px; display:block; }
   .field-title{ font-size:22px; font-weight:600; margin:0 0 6px; }
   .field-help{ font-size:13.5px; color:var(--graphite); margin:0 0 18px; line-height:1.5; max-width:46ch; }
@@ -63,6 +70,10 @@
   }
   textarea{resize:vertical; min-height:100px; line-height:1.5;}
   input:focus, textarea:focus{ outline:2px solid var(--pine); outline-offset:1px; }
+  .date-picker-row{ display:flex; gap:8px; align-items:stretch; }
+  .date-picker-row input[type=text]{ flex:1; }
+  .date-picker-row button{ white-space:nowrap; }
+  .native-date-picker{ position:fixed; width:1px; height:1px; opacity:0; pointer-events:none; }
   .nav-row{ display:flex; gap:10px; margin-top:22px; }
   button{
     font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:.02em;
@@ -81,6 +92,7 @@
   }
   .format-note{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--graphite); border-top:1px solid var(--rule); padding-top:12px; margin-top:18px; line-height:1.6; }
   .upload-row{ margin-top:12px; }
+  .upload-row.drag-active{ outline:2px solid var(--pine); outline-offset:4px; border-radius:2px; }
   .upload-btn{
     display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:600;
     color:var(--pine); border:1.5px dashed var(--pine); padding:9px 14px; border-radius:2px; cursor:pointer; background:#F2F6EC;
@@ -90,6 +102,10 @@
   .thumb-wrap img{ display:block; max-width:100%; max-height:260px; margin:0 auto; }
   .thumb-meta{ display:flex; justify-content:space-between; align-items:center; padding:7px 10px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--graphite); border-top:1px solid var(--rule); }
   .thumb-meta button{ padding:4px 8px; font-size:10.5px; }
+  .thumb-size{ display:flex; align-items:center; gap:8px; padding:7px 10px; border-top:1px solid var(--rule); font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--graphite); }
+  .thumb-size select{ font:inherit; color:var(--ink); background:#fff; border:1px solid var(--rule); border-radius:2px; padding:4px 6px; }
+  .thumb-tools{ display:flex; flex-wrap:wrap; gap:6px; padding:7px 10px; border-top:1px solid var(--rule); }
+  .thumb-tools button{ padding:4px 7px; font-size:10.5px; }
 
   /* ---- Document preview: mirrors the exact .docx layout ---- */
   .sheet{
@@ -101,16 +117,39 @@
   .doc-table .topic-cell{ text-align:center; width:73%; }
   .doc-table .meta-cell{ width:27%; }
   .doc-aim{ margin-bottom:16px; }
-  .doc-aim b{ font-weight:700; }
+  .doc-aim b{ font-weight:700; text-decoration:underline; }
+  .doc-aim-content{ white-space:pre-wrap; margin-top:4px; }
   .doc-label{ font-weight:700; text-decoration:underline; margin:14px 0 4px; }
   .doc-body-text{ white-space:pre-wrap; margin-bottom:6px; }
   .doc-code{ white-space:pre-wrap; margin-bottom:6px; }
-  .doc-output-img{ max-width:100%; display:block; margin:4px 0 8px; }
+  .doc-output-img{ max-width:100%; max-height:560px; object-fit:contain; object-position:left top; display:block; margin:4px 0 8px; }
   .doc-output-empty{ color:#999; font-style:italic; font-size:12.5px; margin-bottom:8px; }
   .doc-result{ margin-top:20px; }
   .doc-result b{ font-weight:700; text-decoration:underline; }
+  .sheet.is-editing [data-preview-field]{ outline:1px dashed var(--pine); outline-offset:2px; background:#F2F6EC; cursor:text; }
+  .sheet.is-editing [data-preview-field]:focus{ outline:2px solid var(--pine); background:#fff; }
   .review-actions{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:4px; }
   .empty-hint{ color:var(--graphite); font-family:'IBM Plex Mono',monospace; font-size:12px; max-width:32ch; text-align:center; margin-top:80px; }
+  .modal-backdrop{ position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:20px; background:rgba(32,40,58,.42); }
+  .modal{ width:min(560px,100%); max-height:calc(100vh - 40px); overflow:auto; padding:22px; border:2px solid var(--ink); background:var(--paper); box-shadow:0 18px 44px rgba(0,0,0,.3); }
+  .modal h2{ margin:0 0 8px; font-size:20px; }
+  .modal p{ color:var(--graphite); font-size:13px; line-height:1.45; }
+  .question-manager-row{ display:flex; align-items:center; gap:6px; padding:9px 0; border-top:1px solid var(--rule); font:12px 'IBM Plex Mono',monospace; }
+  .question-manager-row span{ flex:1; }
+  .question-manager-row button{ padding:5px 8px; font-size:10.5px; }
+  .modal-actions{ display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; margin-top:18px; }
+  .image-editor-preview{ display:block; max-width:100%; max-height:340px; margin:12px auto; border:1px solid var(--rule); }
+  .crop-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .crop-grid label{ display:grid; gap:4px; font:11px 'IBM Plex Mono',monospace; color:var(--graphite); }
+  .crop-grid input{ padding:7px; }
+  @media print{
+    body{ background:#fff; }
+    body > *:not(#printRoot){ display:none !important; }
+    #printRoot{ display:block !important; }
+    #printRoot .sheet{ width:auto; min-height:0; box-shadow:none; margin:0; }
+    #printRoot .doc-aim, #printRoot .doc-result, #printRoot .question-print-block{ break-inside:avoid; page-break-inside:avoid; }
+    @page{ size:A4; margin:14mm; }
+  }
 </style>
 </head>
 <body>
@@ -119,7 +158,12 @@
   <span class="mark">LR</span>
   <div>
     <h1>Lab Record Generator</h1>
-    <div class="sub">Matches reference .docx exactly · Word + picture export</div>
+    <div class="sub">Word, picture, and print-to-PDF export · draft autosaves in this browser</div>
+  </div>
+  <div class="topbar-actions">
+    <span class="save-status" id="saveStatus">Not saved</span>
+    <button type="button" class="ghost" id="btnLoadDraft">Load draft</button>
+    <button type="button" class="ghost" id="btnClearDraft">Clear saved</button>
   </div>
 </div>
 
@@ -130,9 +174,78 @@
 
 <script>
 // ---------------- State ----------------
-function blankQ(){ return {question:"", code:"", outputText:"", outputImage:null}; }
+function blankQ(){ return {question:"", code:"", outputText:"", outputImages:[]}; }
 const state = { regNo:"", date:"", exNo:"", topic:"", aim:"", numQs:2, questions:[], result:"" };
 let step = 0;
+let previewEditing = false;
+const DRAFT_STORAGE_KEY = "lab-record-generator-enhanced-v1";
+let autosaveTimer = null;
+let previewEditSnapshot = null;
+let previewUndoStack = [];
+
+function imagesForQuestion(question){ return question.outputImages || (question.outputImage ? [question.outputImage] : []); }
+function serialiseState(){
+  return {
+    ...state,
+    step,
+    questions: state.questions.map(question => ({
+      question: question.question || "",
+      code: question.code || "",
+      outputText: question.outputText || "",
+      outputImages: imagesForQuestion(question).map(image => ({
+        dataUrl:image.dataUrl, ext:image.ext, mime:image.mime, width:image.width, height:image.height,
+        name:image.name, sizePercent:image.sizePercent ?? null, rotation:image.rotation || 0
+      }))
+    }))
+  };
+}
+function setSaveStatus(text){
+  const status = document.getElementById('saveStatus');
+  if(status) status.textContent = text;
+}
+function scheduleAutosave(){
+  clearTimeout(autosaveTimer);
+  setSaveStatus('Saving…');
+  autosaveTimer = setTimeout(()=>{
+    try{
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(serialiseState()));
+      setSaveStatus('Saved locally');
+    } catch(error){
+      setSaveStatus('Draft too large');
+    }
+  }, 450);
+}
+function loadSavedDraft(){
+  const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+  if(!raw){ alert('No saved draft was found in this browser.'); return; }
+  try{
+    const saved = JSON.parse(raw);
+    state.regNo = saved.regNo || "";
+    state.date = saved.date || "";
+    state.exNo = saved.exNo || "";
+    state.topic = saved.topic || "";
+    state.aim = saved.aim || "";
+    state.numQs = Math.max(1, Math.min(20, parseInt(saved.numQs) || 1));
+    state.questions = Array.isArray(saved.questions) ? saved.questions.slice(0, state.numQs).map(question => ({
+      question:question.question || "", code:question.code || "", outputText:question.outputText || "",
+      outputImages:(question.outputImages || []).map(image => ({...image, arrayBuffer:null, rotation:image.rotation || 0}))
+    })) : [];
+    state.result = saved.result || "";
+    step = Math.min(Math.max(0, parseInt(saved.step) || 0), buildSteps().length);
+    previewEditing = false;
+    render();
+    setSaveStatus('Saved draft loaded');
+  } catch(error){
+    setSaveStatus('Could not load draft');
+    alert('The saved draft could not be read. You can clear it and start a new record.');
+  }
+}
+function clearSavedDraft(){
+  if(!localStorage.getItem(DRAFT_STORAGE_KEY)) return;
+  if(!confirm('Clear the locally saved draft? This will not change the record currently open.')) return;
+  localStorage.removeItem(DRAFT_STORAGE_KEY);
+  setSaveStatus('Saved draft cleared');
+}
 
 function buildSteps(){
   const s = [
@@ -141,7 +254,7 @@ function buildSteps(){
     {key:"exNo", kind:"text", title:"Exercise Number", label:"Header — Ex. No",
      help:"Printed as \u201cEx. No: __\u201d beneath the register number."},
     {key:"date", kind:"date", title:"Date", label:"Header — Date",
-     help:"Printed beneath the exercise number."},
+     help:"Use DD-MM-YYYY. Printed beneath the exercise number."},
     {key:"topic", kind:"text", title:"Topic", label:"Header — Topic",
      help:"Centered, bold, in the wide right-hand cell spanning all three header rows."},
     {key:"aim", kind:"textarea", title:"Aim", label:"Body — Aim",
@@ -164,6 +277,72 @@ function buildSteps(){
 }
 let steps = buildSteps();
 
+function questionControlsHtml(){
+  const n = Math.max(1, Math.min(20, parseInt(state.numQs)||1));
+  return `<div class="question-controls"><span>Questions: <b>${n}</b></span><div><button type="button" id="btnManageQuestions">Manage</button> <button type="button" id="btnRemoveQuestion" ${n <= 1 ? 'disabled' : ''}>− Remove last</button> <button type="button" id="btnAddQuestion" ${n >= 20 ? 'disabled' : ''}>+ Add question</button></div></div>`;
+}
+function bindQuestionControls(){
+  const addButton = document.getElementById('btnAddQuestion');
+  if(addButton) addButton.addEventListener('click', ()=>{
+    const n = Math.max(1, Math.min(20, parseInt(state.numQs)||1));
+    if(n >= 20) return;
+    state.numQs = n + 1;
+    if(!state.questions[n]) state.questions[n] = blankQ();
+    steps = buildSteps();
+    scheduleAutosave();
+    render();
+  });
+  const removeButton = document.getElementById('btnRemoveQuestion');
+  if(removeButton) removeButton.addEventListener('click', ()=>{
+    const n = Math.max(1, Math.min(20, parseInt(state.numQs)||1));
+    if(n <= 1) return;
+    const wasReviewing = step >= steps.length;
+    state.questions.splice(n - 1, 1);
+    state.numQs = n - 1;
+    steps = buildSteps();
+    step = wasReviewing ? steps.length : Math.min(step, steps.length - 1);
+    scheduleAutosave();
+    render();
+  });
+  const manageButton = document.getElementById('btnManageQuestions');
+  if(manageButton) manageButton.addEventListener('click', openQuestionManager);
+}
+
+function closeModal(){ document.getElementById('appModal')?.remove(); }
+function showModal(content){
+  closeModal();
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.id = 'appModal';
+  backdrop.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${content}</div>`;
+  backdrop.addEventListener('click', event => { if(event.target === backdrop) closeModal(); });
+  document.body.appendChild(backdrop);
+  return backdrop;
+}
+function openQuestionManager(){
+  const n = Math.max(1, Math.min(20, parseInt(state.numQs)||1));
+  const rows = Array.from({length:n}, (_, index) => `<div class="question-manager-row"><span>Question ${index + 1}</span><button type="button" data-move-question="${index}" data-direction="up" ${index === 0 ? 'disabled' : ''}>↑</button><button type="button" data-move-question="${index}" data-direction="down" ${index === n - 1 ? 'disabled' : ''}>↓</button><button type="button" data-delete-question="${index}" ${n === 1 ? 'disabled' : ''}>Delete</button></div>`).join('');
+  const modal = showModal(`<h2>Manage questions</h2><p>Reorder questions with the arrows or delete any question. Deleting a question also deletes its program and screenshots.</p>${rows}<div class="modal-actions"><button type="button" class="ghost" id="btnModalClose">Done</button></div>`);
+  modal.querySelector('#btnModalClose').addEventListener('click', ()=>{ closeModal(); render(); });
+  modal.querySelectorAll('[data-move-question]').forEach(button => button.addEventListener('click', ()=>{
+    const from = parseInt(button.dataset.moveQuestion);
+    const to = button.dataset.direction === 'up' ? from - 1 : from + 1;
+    [state.questions[from], state.questions[to]] = [state.questions[to] || blankQ(), state.questions[from] || blankQ()];
+    scheduleAutosave();
+    openQuestionManager();
+  }));
+  modal.querySelectorAll('[data-delete-question]').forEach(button => button.addEventListener('click', ()=>{
+    const index = parseInt(button.dataset.deleteQuestion);
+    if(!confirm(`Delete Question ${index + 1} and all of its content?`)) return;
+    state.questions.splice(index, 1);
+    state.numQs = n - 1;
+    steps = buildSteps();
+    step = Math.min(step, steps.length - 1);
+    scheduleAutosave();
+    openQuestionManager();
+  }));
+}
+
 function getVal(key){
   if(key.startsWith("q")){
     const [qi, field] = key.split("_");
@@ -179,19 +358,21 @@ function setVal(key, value){
     if(!state.questions[idx]) state.questions[idx] = blankQ();
     state.questions[idx][field] = value;
   } else { state[key] = value; }
+  scheduleAutosave();
 }
 
 async function loadSample(){
   state.regNo = "21CS1042";
   state.exNo = "4";
-  state.date = new Date().toISOString().slice(0,10);
+  const today = new Date();
+  state.date = String(today.getDate()).padStart(2, "0") + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + today.getFullYear();
   state.topic = "Singly Linked List Implementation";
   state.aim = "To write a program that implements insertion, deletion and traversal on a singly linked list.";
   state.numQs = 1;
   state.questions = [{
     question:"Write a menu-driven C program to insert a node at the end of a singly linked list, delete the first node, and display the list.",
     code:"struct Node {\n  int data;\n  Node* next;\n};\n\nvoid insertEnd(Node*& head, int val) {\n  Node* n = new Node{val, nullptr};\n  if (!head) { head = n; return; }\n  Node* t = head;\n  while (t->next) t = t->next;\n  t->next = n;\n}",
-    outputText:"", outputImage:null
+    outputText:"", outputImages:[]
   }];
   state.result = "The program to implement a singly linked list was executed successfully and the output was verified.";
   steps = buildSteps();
@@ -211,18 +392,21 @@ function renderForm(){
   const total = steps.length + 1;
   const current = Math.min(step, steps.length) + 1;
   const pct = Math.round((current/total)*100);
+  const questionControls = questionControlsHtml();
 
   if(step >= steps.length){
     el.innerHTML = `
       <button class="sample-link" onclick="loadSample()">Load sample</button>
       <div class="progress"><span>Review</span><span>${pct}% completed</span></div>
       <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      ${questionControls}
       <p class="field-label">Review All</p>
       <h2 class="field-title">Ready to export</h2>
       <p class="field-help">The preview matches the reference document exactly: bordered header table, QUESTION / PROGRAM / OUTPUT per question, RESULT at the close, page border repeating on every page.</p>
       <div class="nav-row"><button class="ghost" onclick="step=steps.length-1; render()">Back to edit</button></div>
       <div class="format-note">Format: header table (Reg No / Ex No / Date left, Topic merged right) &middot; AIM &middot; QUESTION: / PROGRAM: / OUTPUT: (picture) per question &middot; RESULT: at the close &middot; page border on every page</div>
     `;
+    bindQuestionControls();
     return;
   }
 
@@ -235,22 +419,25 @@ function renderForm(){
   } else if(s.kind === "number"){
     inputHtml = `<input id="fld" type="number" min="1" max="20" value="${escapeHtml(String(getVal(s.key)||1))}" />`;
   } else if(s.kind === "date"){
-    inputHtml = `<input id="fld" type="date" value="${escapeHtml(getVal(s.key))}" />`;
+    inputHtml = `<div class="date-picker-row"><input id="fld" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="DD-MM-YYYY" pattern="[0-9]{2}-[0-9]{2}-[0-9]{4}" title="Use DD-MM-YYYY" value="${escapeHtml(getVal(s.key))}" autofocus /><button type="button" class="ghost" id="btnDatePicker">Select date</button><input id="nativeDatePicker" class="native-date-picker" type="date" value="${dateToPickerValue(getVal(s.key))}" tabindex="-1" aria-hidden="true" /></div>`;
   } else if(s.kind === "output"){
     const [qi] = s.key.split("_");
     const idx = parseInt(qi.slice(1));
     const q = state.questions[idx] || blankQ();
+    const images = q.outputImages || (q.outputImage ? [q.outputImage] : []);
     inputHtml = `
-      <div class="upload-row">
-        <label class="upload-btn" for="imgFld">${q.outputImage ? 'Replace screenshot' : 'Attach output screenshot'}</label>
-        <input type="file" id="imgFld" accept="image/png,image/jpeg" style="display:none" />
-        <p class="upload-hint">PNG or JPG. Embedded directly under OUTPUT: in the document, sized to fit the page width.</p>
+      <div class="upload-row" id="uploadRow">
+        <label class="upload-btn" for="imgFld">${images.length ? 'Add screenshots' : 'Attach output screenshots'}</label>
+        <input type="file" id="imgFld" accept="image/png,image/jpeg" multiple style="display:none" />
+        <p class="upload-hint">Select or drag in PNG/JPG files (maximum 8 MB each). They are embedded in upload order under OUTPUT:.</p>
       </div>
-      ${q.outputImage ? `
+      ${images.length ? `<div class="thumb-list">${images.map((image, imageIndex) => `
       <div class="thumb-wrap">
-        <img src="${q.outputImage.dataUrl}" />
-        <div class="thumb-meta"><span>${escapeHtml(q.outputImage.name)}</span><button type="button" id="removeImg">Remove</button></div>
-      </div>` : ``}
+        <img src="${image.dataUrl}" alt="Output screenshot ${imageIndex + 1}" />
+        <div class="thumb-meta"><span>${imageIndex + 1}. ${escapeHtml(image.name)}</span><button type="button" data-remove-img="${imageIndex}">Remove</button></div>
+        <div class="thumb-size"><label for="imgSize${imageIndex}">Document size</label><select id="imgSize${imageIndex}" data-image-size="${imageIndex}"><option value="auto" ${image.sizePercent ? '' : 'selected'}>Auto (fit safely)</option><option value="25" ${image.sizePercent===25 ? 'selected' : ''}>25% width</option><option value="50" ${image.sizePercent===50 ? 'selected' : ''}>50% width</option><option value="75" ${image.sizePercent===75 ? 'selected' : ''}>75% width</option><option value="100" ${image.sizePercent===100 ? 'selected' : ''}>100% width</option></select></div>
+        <div class="thumb-tools"><button type="button" data-edit-img="${imageIndex}">Crop / rotate</button></div>
+      </div>`).join("")}</div>` : ``}
     `;
   } else {
     inputHtml = `<input id="fld" type="text" value="${escapeHtml(getVal(s.key))}" autofocus />`;
@@ -260,6 +447,7 @@ function renderForm(){
     <button class="sample-link" onclick="loadSample()">Load sample</button>
     <div class="progress"><span>Step ${current} of ${total}</span><span>${pct}% completed</span></div>
     <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    ${questionControls}
     <span class="field-label">${s.label}</span>
     <h2 class="field-title">${s.title}</h2>
     <p class="field-help">${s.help}</p>
@@ -269,50 +457,239 @@ function renderForm(){
       <button class="primary" id="btnNext">${step===steps.length-1 ? 'Review All' : 'Next'}</button>
     </div>
   `;
+  bindQuestionControls();
 
   if(s.kind === "output"){
     const [qi] = s.key.split("_");
     const idx = parseInt(qi.slice(1));
     document.getElementById('imgFld').addEventListener('change', async (e)=>{
       const file = e.target.files && e.target.files[0];
-      if(file) await attachImage(idx, file);
+      if(file) await attachImages(idx, e.target.files);
       e.target.value = "";
     });
-    const rm = document.getElementById('removeImg');
-    if(rm) rm.addEventListener('click', ()=>{ state.questions[idx].outputImage = null; render(); });
+    const uploadRow = document.getElementById('uploadRow');
+    ['dragenter', 'dragover'].forEach(eventName => uploadRow.addEventListener(eventName, event => { event.preventDefault(); uploadRow.classList.add('drag-active'); }));
+    ['dragleave', 'drop'].forEach(eventName => uploadRow.addEventListener(eventName, event => { event.preventDefault(); uploadRow.classList.remove('drag-active'); }));
+    uploadRow.addEventListener('drop', async event => {
+      const files = event.dataTransfer?.files;
+      if(files?.length) await attachImages(idx, files);
+    });
+    el.querySelectorAll('[data-remove-img]').forEach(btn => btn.addEventListener('click', ()=>{
+      const imageIndex = parseInt(btn.dataset.removeImg);
+      const q = state.questions[idx];
+      if(!q.outputImages) q.outputImages = q.outputImage ? [q.outputImage] : [];
+      q.outputImages.splice(imageIndex, 1);
+      delete q.outputImage;
+      scheduleAutosave();
+      render();
+    }));
+    el.querySelectorAll('[data-image-size]').forEach(select => select.addEventListener('change', ()=>{
+      const imageIndex = parseInt(select.dataset.imageSize);
+      const q = state.questions[idx];
+      if(!q.outputImages) q.outputImages = q.outputImage ? [q.outputImage] : [];
+      q.outputImages[imageIndex].sizePercent = select.value === 'auto' ? null : parseInt(select.value);
+      delete q.outputImage;
+      scheduleAutosave();
+      renderPreview();
+    }));
+    el.querySelectorAll('[data-edit-img]').forEach(button => button.addEventListener('click', ()=>openImageEditor(idx, parseInt(button.dataset.editImg))));
     document.getElementById('btnNext').addEventListener('click', ()=>{ step++; render(); });
     document.getElementById('btnPrev').addEventListener('click', ()=>{ step--; render(); });
     return;
   }
 
   const fld = document.getElementById('fld');
-  fld.addEventListener('input', ()=>{ setVal(s.key, fld.value); if(s.kind==='number'){ renderPreview(); } });
+  fld.addEventListener('input', ()=>{
+    if(s.kind === 'date'){
+      fld.value = formatDateInput(fld.value);
+      const picker = document.getElementById('nativeDatePicker');
+      const pickerValue = dateToPickerValue(fld.value);
+      if(picker && pickerValue) picker.value = pickerValue;
+    }
+    setVal(s.key, fld.value);
+    if(s.kind==='number'){ renderPreview(); }
+  });
+  if(s.kind === 'date'){
+    const picker = document.getElementById('nativeDatePicker');
+    document.getElementById('btnDatePicker').addEventListener('click', ()=>{
+      if(typeof picker.showPicker === 'function') picker.showPicker();
+      else picker.focus();
+    });
+    picker.addEventListener('change', ()=>{
+      fld.value = formatDateInput(picker.value);
+      setVal(s.key, fld.value);
+      renderPreview();
+    });
+  }
   document.getElementById('btnNext').addEventListener('click', ()=>{ setVal(s.key, fld.value); step++; render(); });
   const prevBtn = document.getElementById('btnPrev');
   if(prevBtn) prevBtn.addEventListener('click', ()=>{ setVal(s.key, fld.value); step--; render(); });
 }
 
-async function attachImage(idx, file){
-  const arrayBuffer = await file.arrayBuffer();
-  const dataUrl = await new Promise((res,rej)=>{
-    const r = new FileReader();
-    r.onload = ()=>res(r.result); r.onerror = rej; r.readAsDataURL(file);
-  });
-  const dims = await new Promise((res,rej)=>{
-    const img = new Image();
-    img.onload = ()=>res({width:img.naturalWidth, height:img.naturalHeight});
-    img.onerror = rej; img.src = dataUrl;
-  });
-  const ext = file.type === 'image/png' ? 'png' : 'jpeg';
+async function attachImages(idx, files){
   if(!state.questions[idx]) state.questions[idx] = blankQ();
-  state.questions[idx].outputImage = { arrayBuffer, dataUrl, ext, mime:file.type, width:dims.width, height:dims.height, name:file.name };
+  const q = state.questions[idx];
+  if(!q.outputImages) q.outputImages = q.outputImage ? [q.outputImage] : [];
+  for(const file of Array.from(files)){
+    if(!['image/png', 'image/jpeg'].includes(file.type)){
+      alert(`${file.name} was skipped. Please use a PNG or JPG image.`);
+      continue;
+    }
+    if(file.size > 8 * 1024 * 1024){
+      alert(`${file.name} was skipped because it is larger than 8 MB.`);
+      continue;
+    }
+    const arrayBuffer = await file.arrayBuffer();
+    const dataUrl = await new Promise((res,rej)=>{
+      const r = new FileReader();
+      r.onload = ()=>res(r.result); r.onerror = rej; r.readAsDataURL(file);
+    });
+    const dims = await new Promise((res,rej)=>{
+      const img = new Image();
+      img.onload = ()=>res({width:img.naturalWidth, height:img.naturalHeight});
+      img.onerror = rej; img.src = dataUrl;
+    });
+    const ext = file.type === 'image/png' ? 'png' : 'jpeg';
+    q.outputImages.push({ arrayBuffer, dataUrl, ext, mime:file.type, width:dims.width, height:dims.height, name:file.name, sizePercent:null });
+  }
+  delete q.outputImage;
+  scheduleAutosave();
   render();
+}
+
+async function openImageEditor(questionIndex, imageIndex){
+  const question = state.questions[questionIndex];
+  const image = imagesForQuestion(question)[imageIndex];
+  if(!image) return;
+  const modal = showModal(`<h2>Edit screenshot</h2><p>Crop unwanted edges by percentage and optionally rotate the image. Applying the edit replaces this screenshot in the record.</p><img class="image-editor-preview" src="${image.dataUrl}" alt="Screenshot to edit" /><div class="crop-grid"><label>Left crop (%)<input id="cropLeft" type="number" min="0" max="45" value="0" /></label><label>Right crop (%)<input id="cropRight" type="number" min="0" max="45" value="0" /></label><label>Top crop (%)<input id="cropTop" type="number" min="0" max="45" value="0" /></label><label>Bottom crop (%)<input id="cropBottom" type="number" min="0" max="45" value="0" /></label><label>Rotate<select id="rotateImage"><option value="0">No rotation</option><option value="90">90° clockwise</option><option value="180">180°</option><option value="270">90° counter-clockwise</option></select></label></div><div class="modal-actions"><button type="button" class="ghost" id="btnCancelImageEdit">Cancel</button><button type="button" class="pine" id="btnApplyImageEdit">Apply edit</button></div>`);
+  modal.querySelector('#btnCancelImageEdit').addEventListener('click', closeModal);
+  modal.querySelector('#btnApplyImageEdit').addEventListener('click', async ()=>{
+    const crop = {
+      left:Math.max(0, Math.min(45, parseFloat(modal.querySelector('#cropLeft').value) || 0)),
+      right:Math.max(0, Math.min(45, parseFloat(modal.querySelector('#cropRight').value) || 0)),
+      top:Math.max(0, Math.min(45, parseFloat(modal.querySelector('#cropTop').value) || 0)),
+      bottom:Math.max(0, Math.min(45, parseFloat(modal.querySelector('#cropBottom').value) || 0))
+    };
+    if(crop.left + crop.right >= 90 || crop.top + crop.bottom >= 90){ alert('Keep the total crop on each axis below 90%.'); return; }
+    const applyButton = modal.querySelector('#btnApplyImageEdit');
+    applyButton.disabled = true; applyButton.textContent = 'Applying…';
+    try{
+      await transformImage(image, crop, parseInt(modal.querySelector('#rotateImage').value));
+      scheduleAutosave();
+      closeModal();
+      render();
+    } catch(error){
+      applyButton.disabled = false; applyButton.textContent = 'Apply edit';
+      alert('This screenshot could not be edited. Please try another image.');
+    }
+  });
+}
+async function transformImage(image, crop, rotation){
+  const source = await new Promise((resolve, reject) => {
+    const img = new Image(); img.onload = ()=>resolve(img); img.onerror = reject; img.src = image.dataUrl;
+  });
+  const sx = Math.round(source.naturalWidth * crop.left / 100);
+  const sy = Math.round(source.naturalHeight * crop.top / 100);
+  const sw = Math.max(1, Math.round(source.naturalWidth * (100 - crop.left - crop.right) / 100));
+  const sh = Math.max(1, Math.round(source.naturalHeight * (100 - crop.top - crop.bottom) / 100));
+  const turns = ((rotation % 360) + 360) % 360;
+  const canvas = document.createElement('canvas');
+  canvas.width = turns === 90 || turns === 270 ? sh : sw;
+  canvas.height = turns === 90 || turns === 270 ? sw : sh;
+  const context = canvas.getContext('2d');
+  context.translate(canvas.width / 2, canvas.height / 2);
+  context.rotate(turns * Math.PI / 180);
+  context.drawImage(source, sx, sy, sw, sh, -sw / 2, -sh / 2, sw, sh);
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  if(!blob) throw new Error('Image conversion failed');
+  image.dataUrl = canvas.toDataURL('image/png');
+  image.arrayBuffer = await blob.arrayBuffer();
+  image.ext = 'png'; image.mime = 'image/png'; image.width = canvas.width; image.height = canvas.height;
+  image.name = image.name.replace(/\.[^.]+$/, '') + '-edited.png';
+}
+
+function formatDateInput(value){
+  const isoMatch = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(isoMatch) return `${isoMatch[3]}-${isoMatch[2]}-${isoMatch[1]}`;
+  const digits = String(value).replace(/\D/g, '').slice(0, 8);
+  return [digits.slice(0,2), digits.slice(2,4), digits.slice(4,8)].filter(Boolean).join('-');
+}
+
+function dateToPickerValue(value){
+  const match = String(value).match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : "";
+}
+
+function isValidDate(value){
+  const match = String(value).match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if(!match) return false;
+  const [, day, month, year] = match.map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+function validateRecord(){
+  const errors = [];
+  if(!state.regNo.trim()) errors.push('Enter the Register Number.');
+  if(!state.exNo.trim()) errors.push('Enter the Exercise Number.');
+  if(!isValidDate(state.date)) errors.push('Enter a valid Date in DD-MM-YYYY format.');
+  if(!state.topic.trim()) errors.push('Enter the Topic.');
+  if(!state.aim.trim()) errors.push('Enter the Aim.');
+  const n = Math.max(1, Math.min(20, parseInt(state.numQs)||1));
+  for(let i=0; i<n; i++){
+    const question = state.questions[i] || blankQ();
+    if(!question.question.trim()) errors.push(`Enter the text for Question ${i + 1}.`);
+    if(!question.code.trim()) errors.push(`Enter the program for Question ${i + 1}.`);
+    const images = imagesForQuestion(question);
+    if(!images.length) errors.push(`Attach at least one output screenshot for Question ${i + 1}.`);
+    images.forEach((image, imageIndex) => {
+      if(!image.dataUrl || !/^data:image\/(png|jpeg);/i.test(image.dataUrl)) errors.push(`Question ${i + 1}, screenshot ${imageIndex + 1} is not a valid PNG/JPG image.`);
+    });
+  }
+  if(!state.result.trim()) errors.push('Enter the Result.');
+  return errors;
+}
+function validateBeforeExport(){
+  const errors = validateRecord();
+  if(!errors.length) return true;
+  showModal(`<h2>Complete the record before exporting</h2><p>Please fix the following:</p><ul>${errors.map(error => `<li>${escapeHtml(error)}</li>`).join('')}</ul><div class="modal-actions"><button type="button" class="primary" id="btnCloseValidation">Back to edit</button></div>`).querySelector('#btnCloseValidation').addEventListener('click', closeModal);
+  return false;
+}
+async function hydrateImagesForExport(){
+  for(const question of state.questions){
+    for(const image of imagesForQuestion(question)){
+      if(!image.arrayBuffer && image.dataUrl){
+        const response = await fetch(image.dataUrl);
+        image.arrayBuffer = await response.arrayBuffer();
+      }
+    }
+  }
 }
 
 function escapeHtml(str){
   return String(str ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 function nl2br(str){ return escapeHtml(str).replace(/\n/g,'<br>'); }
+function previewAttrs(key){ return previewEditing ? `contenteditable="true" data-preview-field="${key}" spellcheck="true"` : ''; }
+function previewText(value, emptyText='&nbsp;'){
+  const text = String(value ?? '');
+  return text ? nl2br(text) : (previewEditing ? '&nbsp;' : emptyText);
+}
+function capturePreviewText(){
+  return {
+    regNo:state.regNo, date:state.date, exNo:state.exNo, topic:state.topic, aim:state.aim, result:state.result,
+    questions:state.questions.map(question => ({question:question.question || '', code:question.code || ''}))
+  };
+}
+function restorePreviewText(snapshot){
+  if(!snapshot) return;
+  ['regNo','date','exNo','topic','aim','result'].forEach(key => state[key] = snapshot[key] || '');
+  snapshot.questions.forEach((question, index) => {
+    if(!state.questions[index]) state.questions[index] = blankQ();
+    state.questions[index].question = question.question || '';
+    state.questions[index].code = question.code || '';
+  });
+  scheduleAutosave();
+}
 
 // ---------------- Preview (mirrors the .docx layout) ----------------
 function renderPreview(){
@@ -327,40 +704,78 @@ function renderPreview(){
   let qHtml = "";
   for(let i=0;i<n;i++){
     const q = state.questions[i] || blankQ();
-    qHtml += `
+    qHtml += `<div class="question-print-block" data-page-block>
       <div class="doc-label">QUESTION:</div>
-      <div class="doc-body-text">${nl2br(q.question) || '&nbsp;'}</div>
+      <div class="doc-body-text" ${previewAttrs("q"+i+"_question")}>${previewText(q.question)}</div>
       <div class="doc-label">PROGRAM:</div>
-      <div class="doc-code">${nl2br(q.code) || '&nbsp;'}</div>
+      <div class="doc-code" ${previewAttrs("q"+i+"_code")}>${previewText(q.code)}</div>
       <div class="doc-label">OUTPUT:</div>
-      ${q.outputImage ? `<img class="doc-output-img" src="${q.outputImage.dataUrl}" />` : `<div class="doc-output-empty">No screenshot attached yet</div>`}
-    `;
+      ${(q.outputImages || (q.outputImage ? [q.outputImage] : [])).length
+        ? (q.outputImages || [q.outputImage]).map((image, imageIndex) => `<img class="doc-output-img" src="${image.dataUrl}" alt="Output screenshot ${imageIndex + 1}" ${image.sizePercent ? `style="width:${image.sizePercent}%"` : ''} />`).join("")
+        : `<div class="doc-output-empty">No screenshot attached yet</div>`}
+    </div>`;
   }
 
   const showExport = step >= steps.length;
   el.innerHTML = `
-    ${showExport ? `<div class="review-actions">
+    <div class="review-actions">
+      ${previewEditing ? `<button class="ghost" id="btnUndoPreview" ${previewUndoStack.length ? '' : 'disabled'}>Undo</button><button class="ghost" id="btnCancelPreview">Cancel preview edits</button><button class="primary" id="btnSavePreview">Save preview edits</button>` : `<button class="ghost" id="btnEditPreview">Edit preview</button>`}
+      ${showExport ? `
       <button class="primary" id="btnDocx">Download Word (.docx)</button>
       <button class="pine" id="btnImages">Download Pictures (.png, one per page)</button>
-    </div>` : ``}
-    <div class="sheet" id="sheet">
-      <table class="doc-table">
+      <button class="ghost" id="btnPdf">Print / Save PDF</button>` : ``}
+    </div>
+    <div class="sheet ${previewEditing ? 'is-editing' : ''}" id="sheet">
+      <table class="doc-table" data-page-block>
         <tr>
-          <td class="meta-cell">${escapeHtml(state.regNo)||'\u2014'}</td>
-          <td class="topic-cell" rowspan="3" style="text-align:center;">${escapeHtml(state.topic)||'\u2014'}</td>
+          <td class="meta-cell"><span ${previewAttrs("regNo")}>${previewText(state.regNo, '\u2014')}</span></td>
+          <td class="topic-cell" rowspan="3" style="text-align:center;"><span ${previewAttrs("topic")}>${previewText(state.topic, '\u2014')}</span></td>
         </tr>
-        <tr><td class="meta-cell">Ex. No: ${escapeHtml(state.exNo)||'\u2014'}</td></tr>
-        <tr><td class="meta-cell">${escapeHtml(state.date)||'\u2014'}</td></tr>
+        <tr><td class="meta-cell">Ex. No: <span ${previewAttrs("exNo")}>${previewText(state.exNo, '\u2014')}</span></td></tr>
+        <tr><td class="meta-cell"><span ${previewAttrs("date")}>${previewText(state.date, '\u2014')}</span></td></tr>
       </table>
-      <div class="doc-aim"><b>AIM:</b> ${nl2br(state.aim)}</div>
+      <div class="doc-aim" data-page-block><b>AIM:</b><div class="doc-aim-content" ${previewAttrs("aim")}>${previewText(state.aim)}</div></div>
       ${qHtml}
-      <div class="doc-result"><b>RESULT</b>: ${nl2br(state.result)}</div>
+      <div class="doc-result" data-page-block><b>RESULT</b>: <span ${previewAttrs("result")}>${previewText(state.result)}</span></div>
     </div>
   `;
+
+  document.getElementById('btnEditPreview')?.addEventListener('click', ()=>{
+    previewEditSnapshot = capturePreviewText();
+    previewUndoStack = [];
+    previewEditing = true;
+    render();
+  });
+  document.getElementById('btnSavePreview')?.addEventListener('click', ()=>{
+    previewEditing = false;
+    previewEditSnapshot = null;
+    previewUndoStack = [];
+    scheduleAutosave();
+    render();
+  });
+  document.getElementById('btnCancelPreview')?.addEventListener('click', ()=>{
+    restorePreviewText(previewEditSnapshot);
+    previewEditing = false;
+    previewEditSnapshot = null;
+    previewUndoStack = [];
+    render();
+  });
+  document.getElementById('btnUndoPreview')?.addEventListener('click', ()=>{
+    restorePreviewText(previewUndoStack.pop());
+    render();
+  });
+  if(previewEditing){
+    el.querySelectorAll('[data-preview-field]').forEach(field => field.addEventListener('input', ()=>{
+      previewUndoStack.push(capturePreviewText());
+      if(previewUndoStack.length > 60) previewUndoStack.shift();
+      setVal(field.dataset.previewField, field.innerText.replace(/\r/g, ''));
+    }));
+  }
 
   if(showExport){
     document.getElementById('btnDocx').addEventListener('click', generateDocx);
     document.getElementById('btnImages').addEventListener('click', exportImages);
+    document.getElementById('btnPdf').addEventListener('click', exportPdf);
   }
 }
 
@@ -391,11 +806,18 @@ function codePara(text){
 }
 
 const CONTENT_WIDTH_EMU = 9026 * 635;
+const MAX_IMAGE_HEIGHT_EMU = 8200 * 635;
 function computeImageExtent(img){
   const nativeW = img.width * 9525, nativeH = img.height * 9525;
-  if(nativeW <= CONTENT_WIDTH_EMU) return {cx: nativeW, cy: nativeH};
-  const ratio = CONTENT_WIDTH_EMU / nativeW;
-  return {cx: CONTENT_WIDTH_EMU, cy: Math.round(nativeH * ratio)};
+  const fitRatio = Math.min(CONTENT_WIDTH_EMU / nativeW, MAX_IMAGE_HEIGHT_EMU / nativeH);
+  const requestedPercent = parseInt(img.sizePercent);
+  // Auto preserves the native size; a chosen percentage is relative to page width.
+  // Either mode is capped to the usable page area and preserves the aspect ratio.
+  const requestedRatio = [25, 50, 75, 100].includes(requestedPercent)
+    ? (CONTENT_WIDTH_EMU * requestedPercent / 100) / nativeW
+    : 1;
+  const ratio = Math.min(requestedRatio, fitRatio);
+  return {cx: Math.round(nativeW * ratio), cy: Math.round(nativeH * ratio)};
 }
 function imageDrawingRun(rId, cx, cy, name, id){
   return `<w:r><w:rPr>${RPR_BODY}</w:rPr><w:drawing>
@@ -439,7 +861,8 @@ function buildHeaderTableXml(){
 function buildDocumentXml(imageRels){
   const n = Math.max(1, Math.min(20, parseInt(state.numQs)||1));
   let body = buildHeaderTableXml();
-  body += para(`<w:r><w:rPr>${RPR_BOLD}</w:rPr><w:t xml:space="preserve">AIM: </w:t></w:r>${runsML(state.aim||"", RPR_BODY)}`);
+  body += labelPara("AIM:");
+  body += bodyPara(state.aim||"");
   body += `<w:p><w:pPr><w:spacing w:after="0"/></w:pPr></w:p>`;
 
   let docPrId = 100;
@@ -450,12 +873,15 @@ function buildDocumentXml(imageRels){
     body += labelPara("PROGRAM:");
     body += codePara(q.code||"");
     body += labelPara("OUTPUT:");
-    if(q.outputImage){
-      const rId = "rIdImg" + (imageRels.length+1);
-      imageRels.push({rId, ext: q.outputImage.ext, arrayBuffer: q.outputImage.arrayBuffer, mime: q.outputImage.mime});
-      const {cx, cy} = computeImageExtent(q.outputImage);
-      docPrId++;
-      body += `<w:p><w:pPr><w:spacing w:after="0"/></w:pPr>${imageDrawingRun(rId, cx, cy, "Output "+(i+1), docPrId)}</w:p>`;
+    const images = q.outputImages || (q.outputImage ? [q.outputImage] : []);
+    if(images.length){
+      images.forEach((image, imageIndex) => {
+        const rId = "rIdImg" + (imageRels.length+1);
+        imageRels.push({rId, ext: image.ext, arrayBuffer: image.arrayBuffer, mime: image.mime});
+        const {cx, cy} = computeImageExtent(image);
+        docPrId++;
+        body += `<w:p><w:pPr><w:spacing w:after="0"/></w:pPr>${imageDrawingRun(rId, cx, cy, "Output "+(i+1)+" - "+(imageIndex+1), docPrId)}</w:p>`;
+      });
     } else if(q.outputText){
       body += bodyPara(q.outputText);
     }
@@ -569,4 +995,4 @@ async function exportImages(){
 render();
 </script>
 </body>
-</html>
+</html
